@@ -10,7 +10,7 @@
       </el-table-column>
       <el-table-column label="头像" width="70">
         <template slot-scope="scope">
-          <img :src="scope.row.user?.avatarUrl || defaultAvatar" style="width:36px;height:36px;border-radius:50%" />
+          <img :src="avatarOf(scope.row)" style="width:36px;height:36px;border-radius:50%" />
         </template>
       </el-table-column>
       <el-table-column prop="content" label="内容" min-width="220" show-overflow-tooltip />
@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import { listComments, deleteComment } from '@/api/admin'
 export default {
   data() {
@@ -46,8 +47,18 @@ export default {
       defaultAvatar: 'https://ui-avatars.com/api/?name=U&background=667eea&color=fff'
     }
   },
+  computed: {
+    ...mapState(['siteInfo'])
+  },
   mounted() { this.load() },
   methods: {
+    avatarOf(row) {
+      const u = row.user || {}
+      const fallback = u.role === 'admin'
+        ? (this.siteInfo.defaultAdminAvatarUrl || this.siteInfo.avatar)
+        : this.siteInfo.defaultUserAvatarUrl
+      return u.avatarUrl || fallback || this.defaultAvatar
+    },
     async load() {
       this.loading = true
       try {

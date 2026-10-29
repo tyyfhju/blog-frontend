@@ -1,0 +1,303 @@
+/* 新版前台视觉变量与公共层。后台路由不挂 .site-shell，不受影响。 */
+.site-shell {
+  min-height: 100vh;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  transition: background .25s var(--ease), color .25s var(--ease);
+}
+
+.site-shell.theme-light {
+  --bg: #F6F8FC;
+  --surface: #FFFFFF;
+  --text: #0F172A;
+  --text-2: #475569;
+  --text-3: #7A8699;
+  --border: #E3E9F2;
+  --brand: #2563EB;
+  --accent: #06B6D4;
+  --grad: linear-gradient(135deg, #2563EB 0%, #06B6D4 100%);
+  --grad-soft: linear-gradient(135deg, rgba(37, 99, 235, .10), rgba(6, 182, 212, .08));
+  --glass: rgba(255, 255, 255, .66);
+  --glass-border: rgba(255, 255, 255, .90);
+  --glass-shadow: 0 24px 60px rgba(15, 23, 42, .10);
+  --glow: rgba(6, 182, 212, .22);
+  --code-bg: #0F172A;
+  --bg-veil: rgba(246, 248, 252, .74);
+  background:
+    radial-gradient(ellipse 70% 45% at 12% 6%, rgba(37, 99, 235, .10), transparent 62%),
+    radial-gradient(ellipse 55% 40% at 88% 18%, rgba(6, 182, 212, .08), transparent 64%),
+    radial-gradient(ellipse 60% 45% at 50% 105%, rgba(99, 102, 241, .07), transparent 68%),
+    var(--bg);
+  color: var(--text);
+}
+
+.site-shell.theme-dark {
+  --bg: #070C16;
+  --surface: #0E1626;
+  --text: #E6EDF7;
+  --text-2: #A8B6C9;
+  --text-3: #7C8CA3;
+  --border: #1B2740;
+  --brand: #60A5FA;
+  --accent: #22D3EE;
+  --grad: linear-gradient(135deg, #3B82F6 0%, #22D3EE 100%);
+  --grad-soft: linear-gradient(135deg, rgba(59, 130, 246, .16), rgba(34, 211, 238, .10));
+  --glass: rgba(14, 22, 38, .62);
+  --glass-border: rgba(148, 163, 184, .26);
+  --glass-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+  --glow: rgba(34, 211, 238, .28);
+  --code-bg: #050912;
+  --bg-veil: rgba(7, 12, 22, .78);
+  background:
+    radial-gradient(ellipse 70% 45% at 12% 6%, rgba(37, 99, 235, .10), transparent 62%),
+    radial-gradient(ellipse 55% 40% at 88% 18%, rgba(6, 182, 212, .08), transparent 64%),
+    radial-gradient(ellipse 60% 45% at 50% 105%, rgba(99, 102, 241, .07), transparent 68%),
+    var(--bg);
+  color: var(--text);
+}
+
+.site-shell,
+.site-shell * {
+  box-sizing: border-box;
+}
+
+.site-shell {
+  --maxw: 1200px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  --font-sans: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+  --radius-pill: 999px;
+}
+
+.site-main {
+  min-height: 60vh;
+  position: relative;
+}
+
+.site-glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, .30);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-glass {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+}
+
+.site-shell .grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.site-shell .mono {
+  font-family: var(--font-mono);
+}
+
+/* ========== 新版文章正文（覆盖旧全局 .post-html） ========== */
+.site-shell .post-html {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+  font-size: 16.5px;
+  line-height: 1.95;
+  color: var(--text-2);
+}
+.site-shell .post-html h1,
+.site-shell .post-html h2,
+.site-shell .post-html h3,
+.site-shell .post-html h4,
+.site-shell .post-html h5,
+.site-shell .post-html h6 {
+  display: block;
+  color: var(--text);
+  padding: 0;
+  margin: 48px 0 16px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  position: relative;
+  line-height: 1.35;
+}
+.site-shell .post-html h1 { font-size: 30px; }
+.site-shell .post-html h2 { font-size: 26px; }
+.site-shell .post-html h3 { font-size: 20px; }
+.site-shell .post-html h4 { font-size: 17px; }
+.site-shell .post-html h5,
+.site-shell .post-html h6 { font-size: 15px; }
+.site-shell .post-html h1::after,
+.site-shell .post-html h2::after,
+.site-shell .post-html h3::after,
+.site-shell .post-html h4::after,
+.site-shell .post-html h5::after,
+.site-shell .post-html h6::after {
+  content: none !important;
+  display: none !important;
+}
+.site-shell .post-html > :first-child { margin-top: 0; }
+.site-shell .post-html p {
+  margin: 0 0 24px;
+  line-height: 1.95;
+}
+.site-shell .post-html strong {
+  background: none !important;
+  background-image: none !important;
+  color: var(--text) !important;
+  -webkit-text-fill-color: currentColor !important;
+  font-weight: 700;
+  padding: 0;
+}
+.site-shell .post-html em {
+  color: inherit !important;
+  font-family: inherit !important;
+}
+.site-shell .post-html a {
+  color: var(--brand);
+  text-decoration: none;
+  border-bottom: 1px solid var(--glow);
+  text-shadow: none !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+.site-shell .post-html a:hover { border-bottom-color: var(--brand); }
+.site-shell .post-html code {
+  background: var(--grad-soft);
+  color: var(--brand) !important;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: .9em;
+}
+.site-shell .post-html pre {
+  position: relative;
+  overflow: auto !important;
+  background: #0E1626 !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 28px 0;
+}
+.site-shell .post-html pre code {
+  background: transparent !important;
+  color: #CBD5E1 !important;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.site-shell .post-html .copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, .22);
+  background: rgba(148, 163, 184, .10);
+  color: #94A3B8;
+  cursor: pointer;
+  z-index: 5;
+  transition: all .18s var(--ease);
+}
+.site-shell .post-html .copy-btn:hover {
+  background: rgba(148, 163, 184, .25);
+  color: #fff;
+}
+.site-shell .post-html img {
+  border-radius: 16px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 28px auto;
+  box-shadow: var(--glass-shadow);
+}
+.site-shell .post-html blockquote,
+.site-shell .post-html .custom-quote {
+  position: relative;
+  margin: 34px 0;
+  padding: 20px 24px;
+  border-left: 3px solid var(--accent);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0 14px 14px 0;
+  background: var(--grad-soft);
+  color: var(--text);
+  font-size: 15.5px;
+}
+.site-shell .post-html blockquote::before,
+.site-shell .post-html blockquote::after,
+.site-shell .post-html .custom-quote::before,
+.site-shell .post-html .custom-quote::after {
+  content: none !important;
+  display: none !important;
+}
+.site-shell .post-html ul,
+.site-shell .post-html ol {
+  margin: 0 0 24px;
+  padding-left: 1.5em;
+}
+.site-shell .post-html ul { list-style: disc; }
+.site-shell .post-html ol { list-style: decimal; }
+.site-shell .post-html li {
+  margin: 0 0 8px;
+  margin-left: 0;
+  line-height: 1.9;
+}
+.site-shell .post-html ul li::before,
+.site-shell .post-html ol li::before {
+  content: none !important;
+  display: none !important;
+}
+.site-shell .post-html hr {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 40px 0;
+  padding: 0;
+}
+.site-shell .post-html hr::before,
+.site-shell .post-html hr::after {
+  content: none !important;
+  display: none !important;
+}
+.site-shell .post-html table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 24px 0;
+  width: 100%;
+}
+.site-shell .post-html th,
+.site-shell .post-html td {
+  border: 1px solid var(--border) !important;
+  padding: 8px 12px;
+}
+.site-shell .post-html th {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+}
+.site-shell .post-html tr {
+  background: transparent !important;
+}
+.site-shell .post-html tr:nth-child(2n) {
+  background: rgba(148, 163, 184, .06) !important;
+}
+

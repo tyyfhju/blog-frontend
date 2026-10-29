@@ -1,69 +1,199 @@
 <template>
-  <div id="app" :class="themeClass">
-    <div id="loading-bar-wrapper"></div>
-    <div class="app-wrapper">
+  <div id="app" :class="shellClass">
+    <template v-if="!isAdminRoute">
       <AppHeader />
-      <div class="app-banner">
-        <div class="app-banner-screen"></div>
-      </div>
-      <div class="app-container">
+      <main class="site-main">
         <router-view />
-      </div>
+      </main>
       <AppFooter />
-    </div>
-    <AuroraDia />
-    <BackTop />
-    <AIChatBot />
-    <SearchModal v-if="showSearchModal" @close="showSearchModal = false" />
+      <BackTop />
+      <SearchModal v-if="showSearchModal" @close="showSearchModal = false" />
+      <AuthModal v-if="showAuthModal" :initial-mode="authMode" @close="closeAuth" />
+    </template>
+    <router-view v-else />
   </div>
 </template>
 
 <script>
 import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
-import AuroraDia from './components/AuroraDia.vue'
 import SearchModal from './components/SearchModal.vue'
+import AuthModal from './components/AuthModal.vue'
 import BackTop from './components/BackTop.vue'
-import AIChatBot from './components/AIChatBot.vue'
 import { mapState } from 'vuex'
-import { getBlogSetting } from './api/blog'
+import { getBlogSetting, getHomeCounts } from './api/blog'
+import { getUserProfile } from './api/user'
+import { decodeJwt } from './utils/helpers'
 
 export default {
   name: 'App',
-  components: { AppHeader, AppFooter, AuroraDia, SearchModal, BackTop, AIChatBot },
+  components: { AppHeader, AppFooter, SearchModal, AuthModal, BackTop },
   data() {
-    return { showSearchModal: false }
+    return {
+      showSearchModal: false,
+      showAuthModal: false,
+      authMode: 'login',
+      authRefreshing: false,
+      lastIdentitySync: 0
+    }
   },
   computed: {
     ...mapState(['theme']),
-    themeClass() { return 'theme-' + this.theme }
+    isAdminRoute() {
+      return this.$route.path.startsWith('/cpanel') || this.$route.path === '/secret-login'
+    },
+    shellClass() {
+      return [
+        'theme-' + this.theme,
+        this.isAdminRoute ? 'admin-shell' : 'site-shell'
+      ]
+    }
+  },
+  watch: {
+    '$route.query.auth'(mode) {
+      if (mode === 'login' || mode === 'register') {
+        this.authMode = mode
+        this.showAuthModal = true
+      }
+    },
+    '$route'() {
+      this.syncAuth()
+    }
   },
   async mounted() {
     document.documentElement.className = 'theme-' + this.theme
     this.$root.$on('open-search', () => { this.showSearchModal = true })
+    this.$root.$on('open-auth', (mode) => {
+      this.authMode = mode === 'register' ? 'register' : 'login'
+      this.showAuthModal = true
+    })
+    this.syncAuth()
+    window.addEventListener('storage', this.onStorage)
+    window.addEventListener('focus', this.syncAuth)
+    window.addEventListener('pageshow', this.syncAuth)
+    document.addEventListener('visibilitychange', this.onVisibility)
+    this.applyAuthQuery()
     try {
       const res = await getBlogSetting()
-      if (res.data) {
-        this.$store.commit('SET_SITE_INFO', {
-          title: res.data.siteTitle,
-          subtitle: res.data.siteSubtitle || '',
-          author: res.data.authorName || '博主',
-          bio: res.data.authorBio || '',
-          avatar: res.data.avatarUrl || '',
-          icp: res.data.icp || '',
-          police: res.data.police || '',
-          footerText: res.data.footerText || '',
-          welcomeText: res.data.welcomeText || '',
-          techStack: res.data.techStack || '',
-          githubUrl: res.data.githubUrl || '',
-          bilibiliUrl: res.data.bilibiliUrl || '',
-          qqNumber: res.data.qqNumber || '',
-          email: res.data.email || '',
-          wechatId: res.data.wechatId || '',
-          defaultUserAvatarUrl: res.data.defaultUserAvatarUrl || ''
-        })
+      const data = res.data || {}
+      this.$store.commit('SET_SITE_INFO', {
+        title: data.siteTitle || 'tyyfhju',
+        subtitle: data.siteSubtitle || '',
+        author: data.authorName || '博主',
+        bio: data.authorBio || '',
+        avatar: data.avatarUrl || data.defaultAdminAvatarUrl || '',
+        icp: data.icp || '',
+        police: data.police || '',
+        footerText: data.footerText || '',
+        welcomeText: data.welcomeText || '',
+        aboutContent: data.aboutContent || '',
+        homeImageUrl: data.homeImageUrl || '',
+        githubUrl: data.githubUrl || '',
+        bilibiliUrl: data.bilibiliUrl || '',
+        qqNumber: data.qqNumber || '',
+        email: data.email || '',
+        wechatId: data.wechatId || '',
+        defaultUserAvatarUrl: data.defaultUserAvatarUrl || '',
+        defaultAvatarUrl: data.defaultAvatarUrl || '',
+        defaultAdminAvatarUrl: data.defaultAdminAvatarUrl || ''
+      })
+      if (data.frontendContent) {
+        let content = data.frontendContent
+        if (typeof content === 'string') {
+          try { content = JSON.parse(content) } catch (e) { content = null }
+        }
+        if (content && typeof content === 'object') {
+          this.$store.commit('SET_SITE_CONTENT', content)
+        }
       }
     } catch (e) { /* 静默失败 */ }
+    try {
+      const res = await getHomeCounts()
+      const counts = res.data || {}
+      this.$store.commit('SET_SITE_INFO', {
+        articleCount: counts.articles || 0,
+        categoryCount: counts.categories || 0,
+        tagCount: counts.tags || 0
+      })
+    } catch (e) { /* 静默失败 */ }
+  },
+  beforeDestroy() {
+    window.removeEventListener('storage', this.onStorage)
+    window.removeEventListener('focus', this.syncAuth)
+    window.removeEventListener('pageshow', this.syncAuth)
+    document.removeEventListener('visibilitychange', this.onVisibility)
+  },
+  methods: {
+    onStorage(e) {
+      if (!e.key || e.key === 'token' || e.key === 'user' || e.key === 'adminToken') {
+        this.syncAuth()
+      }
+    },
+    onVisibility() {
+      if (document.visibilityState === 'visible') this.syncAuth()
+    },
+    syncAuth() {
+      const token = localStorage.getItem('token')
+      let user = null
+      try {
+        const raw = localStorage.getItem('user')
+        user = raw ? JSON.parse(raw) : null
+      } catch (e) {
+        user = null
+      }
+      const loggedIn = !!token
+      const nextUser = loggedIn ? user : null
+      const current = this.$store.state.auth
+      if (current.loggedIn !== loggedIn ||
+          JSON.stringify(current.user || null) !== JSON.stringify(nextUser)) {
+        this.$store.commit('SET_AUTH', { loggedIn, user: nextUser })
+      }
+      this.reconcileIdentity(token, nextUser)
+    },
+    reconcileIdentity(token, user) {
+      if (!token) return
+      const payload = decodeJwt(token)
+      const email = payload.sub || payload.email || ''
+      if (!email) return
+      const matches = user && user.email === email && user.nickname &&
+        (!payload.role || user.role === payload.role)
+      if (matches) return
+      if (Date.now() - this.lastIdentitySync < 10000) return
+      this.lastIdentitySync = Date.now()
+      this.refreshProfile(token)
+    },
+    async refreshProfile(token) {
+      if (this.authRefreshing) return
+      this.authRefreshing = true
+      try {
+        const res = await getUserProfile()
+        if (localStorage.getItem('token') !== token) return
+        const profile = res.data || {}
+        if (!profile.email) return
+        const merged = Object.assign({}, this.$store.state.auth.user || {}, profile)
+        localStorage.setItem('user', JSON.stringify(merged))
+        this.$store.commit('SET_AUTH', { loggedIn: true, user: merged })
+      } catch (e) {
+        // 保留现有登录态，避免网络波动导致前台被登出
+      } finally {
+        this.authRefreshing = false
+      }
+    },
+    applyAuthQuery() {
+      const mode = this.$route.query.auth
+      if (mode === 'login' || mode === 'register') {
+        this.authMode = mode
+        this.showAuthModal = true
+      }
+    },
+    closeAuth() {
+      this.showAuthModal = false
+      if (this.$route.query.auth) {
+        const query = Object.assign({}, this.$route.query)
+        delete query.auth
+        this.$router.replace({ path: this.$route.path, query }).catch(() => {})
+      }
+    }
   }
 }
 </script>
@@ -252,14 +382,12 @@ body {
   background: var(--background-primary-alt);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ========== Scrollbar ========== */
-html { scrollbar-color: #333 transparent; }
-html::-webkit-scrollbar { width: 8px; height: 8px; }
-html::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-html::-webkit-scrollbar-track { background: transparent; }
+html { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar { display: none; width: 0; height: 0; }
 div::-webkit-scrollbar { width: 6px; height: 6px; }
 div::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 div::-webkit-scrollbar-track { background: transparent; }
@@ -270,7 +398,7 @@ div::-webkit-scrollbar-track { background: transparent; }
   height: 100%;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 #app .app-wrapper {
   background: transparent;

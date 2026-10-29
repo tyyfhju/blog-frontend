@@ -38,17 +38,13 @@
           <i class="el-icon-picture"></i>
           <span>相册管理</span>
         </el-menu-item>
-        <el-menu-item index="/cpanel/talks">
-          <i class="el-icon-chat-line-round"></i>
-          <span>说说管理</span>
-        </el-menu-item>
         <el-menu-item index="/cpanel/comments">
           <i class="el-icon-chat-dot-square"></i>
           <span>评论管理</span>
         </el-menu-item>
-        <el-menu-item index="/cpanel/robot-dialogues">
-          <i class="el-icon-chat-dot-round"></i>
-          <span>机器人台词</span>
+        <el-menu-item index="/cpanel/messages">
+          <i class="el-icon-message"></i>
+          <span>留言管理</span>
         </el-menu-item>
       </el-menu>
       <div class="admin-logout" @click="logout">
@@ -73,7 +69,7 @@ export default {
   },
   methods: {
     logout() {
-      localStorage.removeItem('adminToken')
+      this.$store.dispatch('logout')
       this.$router.push('/secret-login')
     }
   }

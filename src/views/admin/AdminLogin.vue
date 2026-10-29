@@ -20,6 +20,7 @@
 
 <script>
 import { login } from '../../api/auth'
+import { getUserProfile } from '../../api/user'
 
 export default {
   data() {
@@ -46,6 +47,15 @@ export default {
           return
         }
         localStorage.setItem('adminToken', token)
+        const baseUser = Object.assign({}, payload, { email: payload.email || payload.sub || this.form.email })
+        await this.$store.dispatch('loginSuccess', { token, user: baseUser })
+        try {
+          const profileRes = await getUserProfile()
+          await this.$store.dispatch('loginSuccess', {
+            token,
+            user: Object.assign({}, baseUser, profileRes.data || {})
+          })
+        } catch (e) { /* 导航栏先使用 JWT 中的基础信息 */ }
         this.$message.success('登录成功')
         this.$router.push('/cpanel')
       } catch (e) {

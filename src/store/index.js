@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { defaultSiteContent, mergeSiteContent } from '../content/site'
 
 Vue.use(Vuex)
 
@@ -19,6 +20,7 @@ export default new Vuex.Store({
       loggedIn: !!localStorage.getItem('token'),
       user: initUser()
     },
+    content: defaultSiteContent,
     siteInfo: {
       title: 'tyyfhju的博客',
       subtitle: '记录技术与生活',
@@ -32,18 +34,20 @@ export default new Vuex.Store({
       police: '',
       footerText: '',
       welcomeText: '',
-      techStack: '',
       aboutContent: '',
       githubUrl: '',
       bilibiliUrl: '',
       qqNumber: '',
       email: '',
       wechatId: '',
+      homeImageUrl: '',
       defaultUserAvatarUrl: '',
+      defaultAdminAvatarUrl: '',
       defaultAvatarUrl: ''
     }
   },
   getters: {
+    content: state => state.content,
     isLoggedIn: state => state.auth.loggedIn,
     isAdmin: state => {
       try { return (state.auth.user || {}).role === 'admin' } catch { return false }
@@ -52,7 +56,10 @@ export default new Vuex.Store({
       try {
         const user = state.auth.user
         if (!user) return rootState.siteInfo.defaultUserAvatarUrl || rootState.siteInfo.avatar || ''
-        return user.avatar || user.avatarUrl || rootState.siteInfo.defaultUserAvatarUrl || rootState.siteInfo.avatar || ''
+        const fallback = user.role === 'admin'
+          ? (rootState.siteInfo.defaultAdminAvatarUrl || rootState.siteInfo.avatar)
+          : (rootState.siteInfo.defaultUserAvatarUrl || rootState.siteInfo.avatar)
+        return user.avatar || user.avatarUrl || fallback || ''
       } catch { return '' }
     }
   },
@@ -64,6 +71,9 @@ export default new Vuex.Store({
     },
     SET_SITE_INFO(state, info) {
       Object.assign(state.siteInfo, info)
+    },
+    SET_SITE_CONTENT(state, content) {
+      state.content = mergeSiteContent(defaultSiteContent, content)
     },
     SET_AUTH(state, { loggedIn, user }) {
       state.auth.loggedIn = loggedIn
@@ -78,6 +88,8 @@ export default new Vuex.Store({
     loginSuccess({ commit }, { token, user }) {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
+      // 切换到普通账号时清掉上一个管理员会话，避免后台权限残留
+      if (!user || user.role !== 'admin') localStorage.removeItem('adminToken')
       commit('SET_AUTH', { loggedIn: true, user })
     },
     logout({ commit }) {

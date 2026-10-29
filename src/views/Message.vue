@@ -44,12 +44,12 @@
         <h3 class="msg-heading">全部留言 ({{ messages.length }})</h3>
         <div v-for="msg in messages" :key="msg.id" class="msg-item">
           <div class="msg-avatar">
-            <img :src="msg.avatarUrl || defaultAvatar" alt="avatar" />
+            <img :src="msg.avatarUrl || defaultUserAvatar" alt="avatar" />
           </div>
           <div class="msg-body">
             <div class="msg-meta">
               <span class="msg-nickname">{{ msg.nickname }}</span>
-              <span class="msg-time">{{ msg.createTime | formatTime }}</span>
+              <span class="msg-time">{{ formatTime(msg.createTime) }}</span>
             </div>
             <div class="msg-content">{{ msg.content }}</div>
           </div>
@@ -82,16 +82,26 @@ export default {
   },
   computed: {
     ...mapGetters(['isLoggedIn', 'userNickname']),
-    defaultAvatar() {
+    defaultUserAvatar() {
       return this.$store.state.siteInfo.defaultUserAvatarUrl
-        || this.$store.state.siteInfo.avatarUrl
+        || this.$store.state.siteInfo.avatar
         || 'https://ui-avatars.com/api/?name=U&background=667eea&color=fff'
+    },
+    myAvatar() {
+      const user = this.$store.state.auth.user || {}
+      const fallback = user.role === 'admin'
+        ? (this.$store.state.siteInfo.defaultAdminAvatarUrl || this.$store.state.siteInfo.avatar)
+        : (this.$store.state.siteInfo.defaultUserAvatarUrl || this.$store.state.siteInfo.avatar)
+      return user.avatarUrl || fallback || 'https://ui-avatars.com/api/?name=U&background=667eea&color=fff'
     }
   },
   mounted() {
     this.loadMessages()
   },
   methods: {
+    formatTime(t) {
+      return t ? String(t).replace('T', ' ').slice(0, 16) : ''
+    },
     async loadMessages() {
       try {
         const res = await getMessages()
@@ -115,7 +125,7 @@ export default {
         await postMessage({
           nickname: nick.trim(),
           content: this.content.trim(),
-          avatarUrl: this.defaultAvatar
+          avatarUrl: this.myAvatar
         })
         this.$message.success('留言成功')
         this.content = ''

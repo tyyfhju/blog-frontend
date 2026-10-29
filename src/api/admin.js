@@ -90,19 +90,6 @@ export function deletePhoto(id) {
   return api.delete('/api/private/photos/' + id)
 }
 
-// ---------- 友链管理 ----------
-export function listFriendLinks() {
-  return api.get('/api/private/friend-links')
-}
-export function createFriendLink(data) {
-  return api.post('/api/private/friend-links', data)
-}
-export function updateFriendLink(id, data) {
-  return api.put('/api/private/friend-links/' + id, data)
-}
-export function deleteFriendLink(id) {
-  return api.delete('/api/private/friend-links/' + id)
-}
 
 // ---------- 留言管理 ----------
 export function listMessages() {
@@ -120,34 +107,6 @@ export function deleteComment(id) {
   return api.delete('/api/private/comments/' + id)
 }
 
-// ---------- 说说管理 ----------
-export function listTalks(page = 0, size = 10) {
-  return api.get('/api/private/talks', { params: { page, size } })
-}
-export function createTalk(data) {
-  return api.post('/api/private/talks', data)
-}
-export function updateTalk(id, data) {
-  return api.put('/api/private/talks/' + id, data)
-}
-export function deleteTalk(id) {
-  return api.delete('/api/private/talks/' + id)
-}
-
-// ---------- 友链审核 ----------
-export function getFriendLinkApplications() {
-  return api.get('/api/private/friend-link-applications')
-}
-export function approveFriendLinkApplication(id) {
-  return api.put('/api/private/friend-link-applications/' + id + '/approve')
-}
-export function rejectFriendLinkApplication(id) {
-  return api.put('/api/private/friend-link-applications/' + id + '/reject')
-}
-export function deleteFriendLinkApplication(id) {
-  return api.delete('/api/private/friend-link-applications/' + id)
-}
-
 // ---------- 仪表盘 ----------
 export function getDashboardStats() {
   return api.get('/api/private/dashboard/stats')
@@ -159,19 +118,5 @@ export function getBlogSetting() {
 }
 export function updateBlogSetting(data) {
   return api.put('/api/private/blog-setting', data)
-}
-
-// ---------- 机器人台词管理 ----------
-export function listRobotDialogues() {
-  return api.get('/api/private/robot-dialogues')
-}
-export function createRobotDialogue(data) {
-  return api.post('/api/private/robot-dialogues', data)
-}
-export function updateRobotDialogue(id, data) {
-  return api.put('/api/private/robot-dialogues/' + id, data)
-}
-export function deleteRobotDialogue(id) {
-  return api.delete('/api/private/robot-dialogues/' + id)
 }
 

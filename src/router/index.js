@@ -3,19 +3,15 @@ import VueRouter from 'vue-router'
 
 // 前台页面
 import Home from '../views/Home.vue'
-import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
 import ForgotPassword from '../views/ForgotPassword.vue'
 import ArticleDetail from '../views/ArticleDetail.vue'
 import Archive from '../views/Archive.vue'
-import Tags from '../views/Tags.vue'
+import Articles from '../views/Articles.vue'
 import Category from '../views/Category.vue'
-import Talks from '../views/Talks.vue'
 import Photos from '../views/Photos.vue'
 import About from '../views/About.vue'
 import UserProfile from '../views/UserProfile.vue'  // 新增
 import Search from '../views/Search.vue'
-import Links from '../views/Links.vue'
 import Message from '../views/Message.vue'
 
 // 后台页面
@@ -28,29 +24,23 @@ import CategoryList from '../views/admin/CategoryList.vue'
 import TagList from '../views/admin/TagList.vue'
 import UserList from '../views/admin/UserList.vue'
 import BlogSettings from '../views/admin/BlogSettings.vue'
-import TalkList from '../views/admin/TalkList.vue'
-import RobotDialogueList from '../views/admin/RobotDialogueList.vue'
 import MessageList from '../views/admin/MessageList.vue'
-import FriendLinkList from '../views/admin/FriendLinkList.vue'
-import FriendLinkApplicationList from '../views/admin/FriendLinkApplicationList.vue'
 import CommentList from '../views/admin/CommentList.vue'
 Vue.use(VueRouter)
 
 const routes = [
   // 前台路由
   { path: '/', component: Home, name: 'home' },
-  { path: '/login', component: Login },
-  { path: '/register', component: Register },
+  { path: '/login', redirect: { path: '/', query: { auth: 'login' } } },
+  { path: '/register', redirect: { path: '/', query: { auth: 'register' } } },
   { path: '/forgot-password', component: ForgotPassword },
   { path: '/article/:id', component: ArticleDetail, props: true },
+  { path: '/articles', component: Articles, name: 'articles' },
   { path: '/archive', component: Archive },
-  { path: '/tags', component: Tags },
   { path: '/category/:id?', component: Category, props: true },
-  { path: '/talks', component: Talks },
   { path: '/photos', component: Photos },
   { path: '/about', component: About },
   { path: '/search', component: Search, name: 'search' },
-  { path: '/links', component: Links },
   { path: '/message', component: Message },
   // 用户中心（需登录）
   { path: '/user/profile', component: UserProfile, meta: { requiresAuth: true } },
@@ -71,12 +61,8 @@ const routes = [
       { path: 'tags', component: TagList },
       { path: 'users', component: UserList },
       { path: 'settings', component: BlogSettings },
-      { path: 'talks', component: TalkList },
       { path: 'photos', component: () => import('../views/admin/PhotoManagement.vue'), name: 'adminPhotos' },
-      { path: 'robot-dialogues', component: RobotDialogueList },
       { path: 'messages', component: MessageList },
-      { path: 'friend-links', component: FriendLinkList },
-      { path: 'friend-link-applications', component: FriendLinkApplicationList },
       { path: 'comments', component: CommentList },
     ]
   }
@@ -127,14 +113,12 @@ router.beforeEach((to, from, next) => {
 // SEO: 动态更新页面标题
 const titleMap = {
   '/': '首页',
+  '/articles': '文章',
   '/archive': '归档',
-  '/tags': '标签',
   '/category': '分类',
-  '/talks': '说说',
   '/photos': '相册',
   '/about': '关于',
   '/search': '搜索',
-  '/links': '友链',
   '/message': '留言',
   '/login': '登录',
   '/register': '注册',

@@ -31,11 +31,6 @@
         <el-form-item label="简介">
           <el-input v-model="form.bio" type="textarea" :rows="3" placeholder="Introduce yourself" />
         </el-form-item>
-        <el-form-item label="订阅">
-          <el-checkbox v-model="form.subscribe" :true-label="1" :false-label="0">
-            订阅（当有新文章时邮件通知我）
-          </el-checkbox>
-        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="saveProfile" :loading="saving">提交</el-button>
         </el-form-item>
@@ -58,7 +53,6 @@ export default {
         email: '',
         website: '',
         bio: '',
-        subscribe: 0,
         avatarUrl: ''
       },
       defaultAvatar: 'https://ui-avatars.com/api/?name=U&background=667eea&color=fff',
@@ -70,7 +64,11 @@ export default {
   computed: {
     ...mapState(['siteInfo']),
     avatarSrc() {
-      return this.form.avatarUrl || this.siteInfo.defaultUserAvatarUrl || this.defaultAvatar
+      const isAdmin = this.$store.state.auth.user?.role === 'admin'
+      const fallback = isAdmin
+        ? (this.siteInfo.defaultAdminAvatarUrl || this.siteInfo.avatar)
+        : (this.siteInfo.defaultUserAvatarUrl || this.siteInfo.avatar)
+      return this.form.avatarUrl || fallback || this.defaultAvatar
     }
   },
   mounted() { this.fetch() },
@@ -84,7 +82,6 @@ export default {
           email: u.email || '',
           website: u.website || '',
           bio: u.bio || '',
-          subscribe: u.subscribe || 0,
           avatarUrl: u.avatarUrl || ''
         }
       } catch (e) { this.$message.error('获取用户信息失败') }

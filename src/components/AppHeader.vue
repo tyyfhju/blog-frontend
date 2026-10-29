@@ -1,64 +1,52 @@
 <template>
-  <div class="header-container">
-    <header class="site-header">
-      <!-- Logo -->
-      <router-link to="/" class="logo-link">
-        <img v-if="siteInfo.avatar" :src="siteInfo.avatar" class="logo-image" alt="logo" />
-        <span class="logo-text">{{ siteInfo.title || 'tyyfhju的博客' }}</span>
-      </router-link>
+  <header class="site-top">
+    <div class="site-top-in site-glass">
+      <router-link class="site-logo" to="/">{{ siteInfo.title || 'tyyfhju' }}<b>.</b></router-link>
 
-      <!-- Navigation -->
-      <nav class="nav-menu">
-        <router-link v-for="item in navList" :key="item.path" :to="item.path"
-          class="nav-link" :class="{ active: isActive(item.path) }">
-          <span>{{ item.label }}</span>
+      <nav class="site-nav">
+        <router-link
+          v-for="item in navList"
+          :key="item.path"
+          :to="item.path"
+          class="site-nav-link"
+          :class="{ on: isActive(item.path) }">
+          {{ item.label }}
         </router-link>
       </nav>
 
-      <!-- Controls -->
-      <div class="header-controls">
-        <!-- Search -->
-        <div class="search-wrapper" :class="{ active: showSearchBar }">
-          <transition name="search-fade">
-            <el-input v-show="showSearchBar" ref="searchInput" v-model="searchKey"
-              size="small" placeholder="搜索文章..."
-              prefix-icon="el-icon-search"
-              clearable
-              @keyup.enter.native="doSearch"
-              @clear="hideSearch"
-              class="search-input">
-            </el-input>
-          </transition>
-          <span v-show="!showSearchBar" @click="toggleSearchBar" class="ctrl-icon" title="搜索">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-            </svg>
-          </span>
-        </div>
+      <div class="site-top-right">
+        <button class="site-icon-btn" type="button" :title="content.common.search" :aria-label="content.common.search" @click="openSearch">⌕</button>
+        <button class="site-icon-btn" type="button" :title="theme === 'dark' ? content.common.lightMode : content.common.darkMode" @click="toggleTheme">
+          {{ theme === 'dark' ? '☀' : '☾' }}
+        </button>
 
-        <!-- Theme toggle -->
-        <span @click="toggleTheme" class="ctrl-icon" title="切换主题">
-          <svg v-if="theme === 'dark'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-          </svg>
-          <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </span>
-
-        <!-- User menu -->
-        <div v-if="isLoggedIn" class="user-menu" style="position:relative">
-          <img :src="userAvatar" class="avatar-img" @click="showUserMenu = !showUserMenu" alt="user" />
-          <div v-if="showUserMenu" class="user-dropdown">
-            <router-link v-if="isAdmin" to="/cpanel">后台管理</router-link>
-            <router-link v-else to="/user/profile">个人中心</router-link>
-            <a href="javascript:void(0)" @click="logout">退出登录</a>
+        <button v-if="!isLoggedIn" class="site-login" type="button" @click="openAuth">{{ content.common.login }}</button>
+        <div v-else class="site-user">
+          <img v-if="userAvatar" :src="userAvatar" class="site-avatar" alt="user" @click.stop="showUserMenu = !showUserMenu">
+          <span v-else class="site-avatar site-avatar-ph" @click.stop="showUserMenu = !showUserMenu">{{ userInitial }}</span>
+          <div v-if="showUserMenu" class="site-user-menu site-glass" @click.stop>
+            <router-link v-if="isAdmin" to="/cpanel">{{ content.common.admin }}</router-link>
+            <router-link v-else to="/user/profile">{{ content.common.profile }}</router-link>
+            <a href="javascript:void(0)" @click="logout">{{ content.common.logout }}</a>
           </div>
         </div>
-        <router-link v-else to="/login" class="login-link">登录</router-link>
+
+        <button class="site-menu-btn" type="button" :aria-label="content.common.menu" @click="mobileOpen = !mobileOpen">☰</button>
       </div>
-    </header>
-  </div>
+    </div>
+
+    <div v-if="mobileOpen" class="site-mobile site-glass">
+      <router-link
+        v-for="item in navList"
+        :key="item.path"
+        :to="item.path"
+        :class="{ on: isActive(item.path) }"
+        @click.native="mobileOpen = false">
+        {{ item.label }}
+      </router-link>
+      <button v-if="!isLoggedIn" type="button" @click="mobileOpen = false; openAuth()">{{ content.common.login }}</button>
+    </div>
+  </header>
 </template>
 
 <script>
@@ -68,261 +56,229 @@ export default {
   name: 'AppHeader',
   data() {
     return {
-      showSearchBar: false,
-      searchKey: '',
       showUserMenu: false,
-      navList: [
-        { path: '/', label: '首页' },
-        { path: '/archive', label: '归档' },
-        { path: '/category', label: '分类' },
-        { path: '/tags', label: '标签' },
-        { path: '/photos', label: '相册' },
-        { path: '/talks', label: '说说' },
-        { path: '/about', label: '关于' }
-      ]
+      mobileOpen: false
     }
   },
   computed: {
-    ...mapState(['siteInfo', 'theme']),
-    ...mapGetters(['isLoggedIn', 'isAdmin', 'userAvatar'])
+    ...mapState(['siteInfo', 'theme', 'content']),
+    ...mapGetters(['isLoggedIn', 'isAdmin', 'userAvatar']),
+    userInitial() {
+      const user = this.$store.state.auth.user || {}
+      return String(user.nickname || user.username || user.email || 'U').charAt(0)
+    },
+    navList() {
+      const n = this.content.nav
+      return [
+        { path: '/', label: n.home },
+        { path: '/articles', label: n.articles },
+        { path: '/archive', label: n.archive },
+        { path: '/category', label: n.categories },
+        { path: '/photos', label: n.photos },
+        { path: '/about', label: n.about }
+      ]
+    }
+  },
+  watch: {
+    $route() {
+      this.mobileOpen = false
+      this.showUserMenu = false
+    }
   },
   mounted() {
-    document.addEventListener('click', (e) => {
-      if (!this.$el.contains(e.target)) this.showUserMenu = false
-    })
+    document.addEventListener('click', this.onDocClick)
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.onDocClick)
   },
   methods: {
-    isActive(p) {
-      if (p === '/') return this.$route.path === '/'
-      return this.$route.path.startsWith(p)
+    onDocClick(e) {
+      if (!this.$el.contains(e.target)) this.showUserMenu = false
     },
-    toggleSearchBar() {
-      this.showSearchBar = !this.showSearchBar
-      if (this.showSearchBar) {
-        this.$nextTick(() => {
-          const el = this.$refs.searchInput
-          if (el) {
-            if (typeof el.focus === 'function') {
-              el.focus()
-            } else if (el.$el) {
-              el.$el.querySelector('input')?.focus()
-            }
-          }
-        })
+    isActive(path) {
+      if (path === '/') return this.$route.path === '/'
+      if (path === '/articles') {
+        return this.$route.path === '/articles' || this.$route.path.startsWith('/article/')
       }
+      return this.$route.path.startsWith(path)
     },
-    hideSearch() { setTimeout(() => { if (!this.searchKey) this.showSearchBar = false }, 200) },
-    toggleTheme() { this.$store.dispatch('toggleTheme') },
-    doSearch() {
-      if (!this.searchKey.trim()) {
-        this.$root.$emit('open-search')
-        return
-      }
-      this.$router.push({ path: '/search', query: { q: this.searchKey } })
-      this.searchKey = ''
-      this.showSearchBar = false
+    openSearch() {
+      this.$root.$emit('open-search')
+    },
+    openAuth() {
+      this.$root.$emit('open-auth', 'login')
+    },
+    toggleTheme() {
+      this.$store.dispatch('toggleTheme')
     },
     logout() {
       this.$store.dispatch('logout')
       this.showUserMenu = false
-      this.$message.success('已退出登录')
-      if (this.$route.path !== '/') {
-        this.$router.push('/')
-      }
-    },
+      this.$message.success(this.content.common.logoutSuccess)
+      if (this.$route.path !== '/') this.$router.push('/')
+    }
   }
 }
 </script>
 
 <style scoped>
-.header-container {
-  position: sticky;
+.site-top {
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  background: transparent;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(12px);
+  padding: 14px 0;
 }
-.site-header {
-  max-width: var(--max-width);
+.site-top-in {
+  max-width: var(--maxw);
   margin: 0 auto;
-  padding: 0.75rem 2rem;
+  padding: 0 22px;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  position: relative;
+  gap: 26px;
+  height: 52px;
+  border-radius: 999px;
 }
-.logo-link {
-  flex-shrink: 0;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-}
-.logo-image {
-  opacity: 0.05;
-  border-radius: 9999px;
-  width: 200px;
-  max-width: 200px;
-  height: 200px;
-  position: absolute;
-  top: -60px;
-  left: -60px;
-}
-.logo-text {
-  font-size: 1.25rem;
+.site-logo {
+  font-size: 17px;
   font-weight: 800;
-  background: var(--main-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  z-index: 1;
-}
-
-/* Navigation */
-.nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
-  margin-right: auto;
-}
-.nav-link {
-  position: relative;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.85);
+  letter-spacing: -.03em;
+  color: var(--text);
   text-decoration: none;
-  font-weight: 500;
-  transition: all .15s;
-  z-index: 0;
+  white-space: nowrap;
 }
-.nav-link:before {
-  z-index: -1;
-  background-color: var(--background-secondary);
-  opacity: 0;
-  content: "";
-  border-radius: .5rem;
-  width: calc(100% + 8px);
-  height: calc(100% + 8px);
-  transition: all .15s;
-  position: absolute;
-  top: -4px;
-  left: -4px;
+.site-logo b { color: var(--brand); }
+.site-nav {
+  display: flex;
+  gap: 4px;
+  font-size: 13.5px;
 }
-.nav-link:hover { color: #fff; }
-.nav-link:hover:before { opacity: .3; background-color: rgba(255,255,255,0.15); }
-.nav-link.active {
-  color: #fff;
-  background: var(--main-gradient);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+.site-nav-link {
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: all .15s var(--ease);
 }
-.nav-link.active:hover { color: #fff; opacity: 1; }
-.nav-link.active:before { display: none; }
-
-/* Controls */
-.header-controls {
+.site-nav-link:hover { color: var(--text); background: var(--grad-soft); }
+.site-nav-link.on { color: var(--brand); background: var(--grad-soft); font-weight: 600; }
+.site-top-right {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
+  gap: 8px;
 }
-.ctrl-icon {
-  color: rgba(255,255,255,0.85);
+.site-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  font-size: 15px;
+  background: none;
+  border: none;
   cursor: pointer;
-  justify-content: center;
-  align-items: center;
-  padding: 0.35rem;
-  transition: opacity .25s;
-  display: flex;
+  transition: all .15s var(--ease);
 }
-.ctrl-icon:hover { opacity: .5; }
-.ctrl-icon svg { pointer-events: none; width: 2rem; height: 2rem; }
-
-.header-controls .search-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
+.site-icon-btn:hover { color: var(--brand); background: var(--grad-soft); }
+.site-login {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .15s var(--ease);
 }
-.header-controls .search-wrapper .search-input {
-  width: 200px;
-}
-.header-controls .search-wrapper .search-input >>> .el-input__inner {
-  background-color: var(--background-primary);
-  border-color: rgba(255,255,255,.2);
-  color: var(--text-normal);
-  border-radius: 20px;
-}
-.header-controls .search-wrapper .search-input >>> .el-input__inner::placeholder {
-  color: var(--text-dim);
-}
-.header-controls .search-wrapper .search-input >>> .el-input__inner:focus {
-  border-color: var(--text-accent);
-  box-shadow: 0 0 0 2px rgba(233,55,150,.15);
-}
-.header-controls .search-wrapper .search-input >>> .el-input__prefix {
-  color: var(--text-dim);
-}
-
-.search-fade-enter-active { animation: searchFadeIn .25s ease; }
-.search-fade-leave-active { animation: searchFadeIn .2s ease reverse; }
-@keyframes searchFadeIn {
-  from { opacity: 0; transform: translateX(10px) scale(.95); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
-}
-
-/* Avatar */
-.avatar-img {
-  width: 32px;
-  height: 32px;
+.site-login:hover { border-color: var(--brand); color: var(--brand); background: var(--grad-soft); }
+.site-user { position: relative; }
+.site-avatar {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all .8s cubic-bezier(.4,0,.2,1);
+  background: var(--grad-soft);
 }
-.avatar-img:hover { border-color: var(--text-accent); transform: rotate(360deg); }
-
-/* Login button */
-.login-link {
-  padding: 5px 16px;
-  border-radius: 8px;
-  font-size: 0.88rem;
+.site-avatar-ph {
+  display: grid;
+  place-items: center;
+  background: var(--grad);
   color: #fff;
-  background: var(--main-gradient);
-  text-decoration: none;
-  font-weight: 500;
-  transition: opacity .2s;
+  font-size: 13px;
+  font-weight: 700;
+  user-select: none;
 }
-.login-link:hover { opacity: .8; }
-
-/* User dropdown */
-.user-dropdown {
+.site-user-menu {
   position: absolute;
-  top: 44px;
   right: 0;
-  background: var(--background-secondary);
+  top: 44px;
+  min-width: 140px;
+  padding: 6px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+}
+.site-user-menu a {
+  padding: 8px 12px;
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  padding: 6px 0;
-  min-width: 120px;
-  z-index: 10;
-}
-.user-dropdown a {
-  display: block;
-  padding: 8px 18px;
-  font-size: 0.88rem;
-  color: var(--text-normal);
+  font-size: 12.5px;
+  color: var(--text-2);
   text-decoration: none;
-  transition: background .15s;
 }
-.user-dropdown a:hover { background: var(--background-primary); opacity: 1; }
+.site-user-menu a:hover { color: var(--brand); background: var(--grad-soft); }
+.site-menu-btn {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: none;
+  background: none;
+  color: var(--text-2);
+  font-size: 17px;
+  cursor: pointer;
+}
+.site-mobile {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: var(--maxw);
+  padding: 10px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.site-mobile a,
+.site-mobile button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--text-2);
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.site-mobile a.on { color: var(--brand); background: var(--grad-soft); font-weight: 600; }
+.site-mobile a:hover,
+.site-mobile button:hover { background: var(--grad-soft); }
 
-@media (max-width: 768px) {
-  .site-header { padding: 0.75rem 1rem; overflow-x: auto; }
-  .nav-link { font-size: 0.8rem; padding: 4px 8px; white-space: nowrap; }
+@media (max-width: 900px) {
+  .site-nav { display: none; }
+  .site-menu-btn { display: grid; place-items: center; }
+}
+@media (max-width: 520px) {
+  .site-top-in { padding: 0 16px; gap: 12px; }
+  .site-logo { font-size: 15px; }
+  .site-login { padding: 5px 10px; font-size: 12px; }
 }
 </style>

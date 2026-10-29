@@ -96,7 +96,6 @@ export default {
       tagCount: 0,
       commentCount: 0,
       messageCount: 0,
-      talkCount: 0,
       photoCount: 0,
       recentArticles: [],
       recentComments: []
@@ -111,7 +110,6 @@ export default {
         { label: '标签总数', value: this.tagCount, icon: 'el-icon-collection-tag', gradient: 'linear-gradient(135deg, #409eff, #66b1ff)' },
         { label: '评论总数', value: this.commentCount, icon: 'el-icon-chat-dot-round', gradient: 'linear-gradient(135deg, #f56c6c, #f89898)' },
         { label: '留言总数', value: this.messageCount, icon: 'el-icon-message', gradient: 'linear-gradient(135deg, #909399, #b4b4b4)' },
-        { label: '说说总数', value: this.talkCount, icon: 'el-icon-chat-line-round', gradient: 'linear-gradient(135deg, #00d2ff, #3a7bd5)' },
         { label: '照片总数', value: this.photoCount, icon: 'el-icon-picture', gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)' }
       ]
     }
@@ -128,7 +126,6 @@ export default {
         this.tagCount = d.tagCount || 0
         this.commentCount = d.commentCount || 0
         this.messageCount = d.messageCount || 0
-        this.talkCount = d.talkCount || 0
         this.photoCount = d.photoCount || 0
         this.recentArticles = d.recentArticles || []
         this.recentComments = d.recentComments || []

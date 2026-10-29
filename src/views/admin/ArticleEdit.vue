@@ -32,7 +32,7 @@
         <el-form-item label="封面图">
           <el-input v-model="form.coverUrl" placeholder="封面图片URL">
             <template slot="append">
-              <el-upload :http-request="uploadCoverLocal" :show-file-list="false" accept="image/*">
+              <el-upload action="#" :http-request="uploadCoverLocal" :show-file-list="false" accept="image/*">
                 <el-button size="small">本地上传</el-button>
               </el-upload>
             </template>
@@ -43,7 +43,7 @@
           <el-switch v-model="form.isRecommend" :active-value="1" :inactive-value="0" active-text="推荐" style="margin-left:20px" />
         </el-form-item>
         <el-form-item label="内容">
-          <mavon-editor ref="md" v-model="form.content" :toolbars="toolbars" @imgAdd="handleImgAdd" style="min-height:500px;" />
+          <mavon-editor ref="md" v-model="form.content" :toolbars="toolbars" :ishljs="false" @imgAdd="handleImgAdd" style="min-height:500px;" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="save">保存</el-button>

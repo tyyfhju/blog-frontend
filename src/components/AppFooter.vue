@@ -1,88 +1,74 @@
 <template>
-  <footer class="app-footer">
-    <!-- 顶部装饰线 -->
-    <div class="footer-divider"></div>
-
-    <div class="footer-inner"></div>
-
-    <!-- 底部版权 -->
-    <div class="footer-bottom">
-      <p>{{ siteInfo.footerText || ('© ' + year + ' ' + (siteInfo.title || 'tyyfhju的博客')) }}</p>
-      <p v-if="siteInfo.icp" class="footer-icp">
-        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{{ siteInfo.icp }}</a>
-      </p>
-      <p v-if="siteInfo.police" class="footer-police">
-        <a href="http://www.beian.gov.cn/" target="_blank" rel="noopener">{{ siteInfo.police }}</a>
-      </p>
+  <footer class="site-footer">
+    <div class="site-footer-in">
+      <span v-if="siteInfo.footerText" v-html="siteInfo.footerText"></span>
+      <span v-else>{{ copyrightText }}</span>
+      <div class="site-footer-legal">
+        <a v-if="siteInfo.icp" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{{ siteInfo.icp }}</a>
+        <span v-else class="legal-slot">{{ content.footer.icp }}</span>
+        <a v-if="siteInfo.police" href="https://beian.mps.gov.cn/" target="_blank" rel="noopener">{{ siteInfo.police }}</a>
+        <span v-else class="legal-slot">{{ content.footer.police }}</span>
+      </div>
     </div>
   </footer>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { formatText } from '../content/site'
 
 export default {
   name: 'AppFooter',
   computed: {
-    ...mapState(['siteInfo']),
-    year() { return new Date().getFullYear() }
+    ...mapState(['siteInfo', 'content']),
+    year() {
+      return new Date().getFullYear()
+    },
+    copyrightText() {
+      return formatText(this.content.footer.copyright, {
+        year: this.year,
+        title: this.siteInfo.title || 'tyyfhju'
+      })
+    }
   }
 }
 </script>
 
 <style scoped>
-.app-footer {
-  background: var(--background-secondary);
-  margin-top: 4rem;
-  position: relative;
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  padding: 32px 0 96px;
+  font-size: 12.5px;
+  color: var(--text-3);
 }
-
-/* 顶部渐变装饰线 */
-.footer-divider {
-  height: 3px;
-  background: var(--main-gradient);
-  opacity: 0.6;
-}
-
-.footer-inner {
-  max-width: var(--max-width);
+.site-footer-in {
+  max-width: var(--maxw);
   margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
 }
-
-/* 底部版权 */
-.footer-bottom {
-  border-top: 1px solid var(--background-trans);
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 1.5rem 2rem;
-  text-align: center;
+.site-footer-legal {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
 }
-.footer-bottom p {
-  font-size: 0.78rem;
-  color: var(--text-faint);
-  margin: 0;
-  line-height: 1.6;
-}
-.footer-icp,
-.footer-police {
-  margin-top: 0.15rem !important;
-}
-.footer-icp a,
-.footer-police a {
-  font-size: 0.75rem;
-  color: var(--text-faint);
+.site-footer-legal a {
+  color: var(--text-3);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color .2s var(--ease);
 }
-.footer-icp a:hover,
-.footer-police a:hover {
-  color: var(--text-accent);
-  opacity: 1;
-}
-
-@media (max-width: 768px) {
-  .footer-bottom {
-    padding: 1rem 1.5rem;
-  }
+.site-footer-legal a:hover { color: var(--brand); }
+.legal-slot {
+  color: var(--text-3);
+  opacity: .55;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .03em;
 }
 </style>
