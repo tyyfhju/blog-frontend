@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { handleSessionExpired } from './session'
 
 const api = axios.create({
   baseURL: '',
@@ -10,6 +11,14 @@ api.interceptors.request.use(config => {
   if (token) config.headers.Authorization = 'Bearer ' + token
   return config
 }, error => Promise.reject(error))
+
+api.interceptors.response.use(
+  res => res,
+  err => {
+    handleSessionExpired(err, true)
+    return Promise.reject(err)
+  }
+)
 
 // ---------- 文章管理 ----------
 export function listArticles(page = 0, size = 10) {

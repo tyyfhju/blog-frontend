@@ -63,10 +63,6 @@
         </div>
       </div>
 
-      <div class="variant-ui site-glass">
-        <span>{{ variantBadge }}</span>
-        <button type="button" @click="nextVariant">{{ content.article.variant.next }}</button>
-      </div>
     </template>
 
     <div v-else class="article-loading">{{ loadError ? content.article.loadFail : content.common.loading }}</div>
@@ -78,7 +74,6 @@ import { mapState } from 'vuex'
 import { getArticleDetail, likeArticle, unlikeArticle } from '../api/blog'
 import CommentSection from '@/components/CommentSection.vue'
 import ArticleIntroCanvas from '@/components/ArticleIntroCanvas.vue'
-import { formatText } from '../content/site'
 import MarkdownIt from 'markdown-it'
 
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
@@ -140,22 +135,12 @@ export default {
         opacity: Math.max(0, 1 - this.introProgress / 0.58),
         transform: 'translate3d(0,' + (this.introProgress * -70) + 'px,0)'
       }
-    },
-    variantBadge() {
-      const names = this.content.article.variant.names || []
-      return formatText(this.content.article.variant.badge, {
-        n: this.introVariant,
-        name: names[this.introVariant - 1] || ''
-      })
     }
   },
   watch: {
     '$route.params.id'() {
       this.loadArticle()
     }
-  },
-  created() {
-    this.pickInitialVariant()
   },
   mounted() {
     this.loadArticle()
@@ -174,14 +159,12 @@ export default {
         ? queryVariant
         : Math.floor(Math.random() * 4) + 1
     },
-    nextVariant() {
-      this.introVariant = (this.introVariant % 4) + 1
-    },
     async loadArticle() {
       const id = this.$route.params.id
       if (!id) return
       this.disconnectObservers()
       this.article = null
+      this.pickInitialVariant()
       this.loadError = false
       this.bgOn = false
       this.introProgress = 0
@@ -774,33 +757,6 @@ export default {
 }
 .article-page .reveal.in { opacity: 1; transform: none; }
 
-/* 首屏动画切换 */
-.article-page .variant-ui {
-  position: fixed;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  z-index: 160;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 6px 5px 14px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  color: var(--text-3);
-  white-space: nowrap;
-}
-.article-page .variant-ui button {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 5px 11px;
-  border-radius: 999px;
-  border: none;
-  background: var(--grad);
-  color: #fff;
-  cursor: pointer;
-}
-
 .article-page .article-loading {
   text-align: center;
   padding: 140px 20px;
@@ -818,7 +774,6 @@ export default {
   .article-page .adjacent { grid-template-columns: 1fr; }
   .article-page .adj.right { text-align: left; }
   .article-page .comments { padding: 20px; }
-  .article-page .variant-ui { bottom: 84px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .article-page .reveal { opacity: 1; transform: none; }

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { handleSessionExpired } from './session'
 
 const api = axios.create({
   baseURL: '',
@@ -10,6 +11,14 @@ api.interceptors.request.use(config => {
   if (token) config.headers.Authorization = 'Bearer ' + token
   return config
 })
+
+api.interceptors.response.use(
+  res => res,
+  err => {
+    handleSessionExpired(err)
+    return Promise.reject(err)
+  }
+)
 
 export function getUserProfile() {
   return api.get('/api/user/profile')

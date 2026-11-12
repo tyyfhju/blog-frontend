@@ -25,11 +25,9 @@
         <el-form-item label="邮箱">
           <el-input v-model="form.email" disabled />
         </el-form-item>
-        <el-form-item label="个人网站">
-          <el-input v-model="form.website" placeholder="https://" />
-        </el-form-item>
-        <el-form-item label="简介">
-          <el-input v-model="form.bio" type="textarea" :rows="3" placeholder="Introduce yourself" />
+        <el-form-item label="邮件订阅">
+          <el-switch v-model="form.subscribe" active-text="新文章发布时邮件通知我" />
+          <p class="field-tip">开启后，本站发布新文章会发送邮件到你的登录邮箱。</p>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="saveProfile" :loading="saving">提交</el-button>
@@ -51,8 +49,7 @@ export default {
       form: {
         nickname: '',
         email: '',
-        website: '',
-        bio: '',
+        subscribe: false,
         avatarUrl: ''
       },
       defaultAvatar: 'https://ui-avatars.com/api/?name=U&background=667eea&color=fff',
@@ -80,8 +77,7 @@ export default {
         this.form = {
           nickname: u.nickname || '',
           email: u.email || '',
-          website: u.website || '',
-          bio: u.bio || '',
+          subscribe: !!u.subscribe,
           avatarUrl: u.avatarUrl || ''
         }
       } catch (e) { this.$message.error('获取用户信息失败') }
@@ -182,5 +178,11 @@ export default {
   display: flex;
   justify-content: center;
   gap: 8px;
+}
+.field-tip {
+  margin: 6px 0 0;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 </style>

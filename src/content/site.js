@@ -108,12 +108,7 @@ export const defaultSiteContent = {
     likeHint: '请先登录后再点赞',
     loadFail: '文章加载失败',
     copyCode: '复制',
-    copied: '已复制',
-    variant: {
-      badge: '视觉 {n}/4 · {name}',
-      next: '换一个',
-      names: ['二十面体', '极光绸带', '轨道星环', '光之双螺旋']
-    }
+    copied: '已复制'
   },
   archive: {
     eyebrow: 'ARCHIVE · 归档',
@@ -149,10 +144,10 @@ export const defaultSiteContent = {
     desc: '关于这个站，以及一些不重要但想说的话。',
     aboutTitle: '关于本站',
     messageTitle: '留言',
-    nicknamePlaceholder: '昵称（可留空）',
     messagePlaceholder: '说点什么吧...',
     submit: '提交留言',
-    nicknameRequired: '请输入昵称',
+    login: '登录',
+    messageLoginHint: '后才能留言',
     messageRequired: '请输入留言内容',
     messageSuccess: '留言成功',
     messageFail: '留言失败',

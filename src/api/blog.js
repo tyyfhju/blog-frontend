@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { handleSessionExpired } from './session'
 
 const api = axios.create({
   baseURL: '',
@@ -15,7 +16,10 @@ api.interceptors.request.use(config => {
 
 api.interceptors.response.use(
   res => res,
-  err => Promise.reject(err)
+  err => {
+    handleSessionExpired(err)
+    return Promise.reject(err)
+  }
 )
 
 export function getRecommendedArticles() {

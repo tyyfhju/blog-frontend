@@ -62,15 +62,8 @@
           <h2>{{ content.about.messageTitle }}</h2>
         </div>
         <div class="message-grid">
-          <form class="msg-form site-glass" @submit.prevent="sendMessage">
-            <input
-              v-if="!isLoggedIn"
-              v-model="msgNickname"
-              type="text"
-              maxlength="30"
-              :placeholder="content.about.nicknamePlaceholder"
-              autocomplete="nickname">
-            <div v-else class="msg-as">{{ asUserText }}</div>
+          <form v-if="isLoggedIn" class="msg-form site-glass" @submit.prevent="sendMessage">
+            <div class="msg-as">{{ asUserText }}</div>
             <textarea
               v-model="msgContent"
               maxlength="500"
@@ -78,6 +71,12 @@
               required></textarea>
             <button type="submit" :disabled="msgLoading">{{ content.about.submit }}</button>
           </form>
+          <div v-else class="msg-form site-glass msg-login">
+            <p>
+              <a href="javascript:void(0)" @click="openAuth">{{ content.about.login }}</a>
+              {{ content.about.messageLoginHint }}
+            </p>
+          </div>
 
           <div class="msg-list">
             <div v-for="item in messages" :key="item.id" class="msg-item">
@@ -130,7 +129,6 @@ export default {
   data() {
     return {
       messages: [],
-      msgNickname: '',
       msgContent: '',
       msgLoading: false,
       contactOpen: false,
@@ -140,10 +138,6 @@ export default {
   computed: {
     ...mapState(['siteInfo', 'content']),
     ...mapGetters(['isLoggedIn']),
-    userNickname() {
-      const user = this.$store.state.auth.user || {}
-      return user.nickname || user.username || user.email || ''
-    },
     accountEmail() {
       const user = this.$store.state.auth.user || {}
       return user.email || user.nickname || user.username || ''
@@ -196,10 +190,12 @@ export default {
         this.messages = []
       }
     },
+    openAuth() {
+      this.$root.$emit('open-auth', 'login')
+    },
     async sendMessage() {
-      const nickname = this.isLoggedIn ? (this.userNickname || this.content.about.anonymous) : this.msgNickname.trim()
-      if (!nickname) {
-        this.$message.warning(this.content.about.nicknameRequired)
+      if (!this.isLoggedIn) {
+        this.openAuth()
         return
       }
       if (!this.msgContent || !this.msgContent.trim()) {
@@ -213,7 +209,6 @@ export default {
           ? (this.siteInfo.defaultAdminAvatarUrl || this.siteInfo.avatar || '')
           : (this.siteInfo.defaultUserAvatarUrl || '')
         await postMessage({
-          nickname,
           content: this.msgContent.trim(),
           avatarUrl: user.avatarUrl || fallback
         })
@@ -659,6 +654,15 @@ export default {
   color: var(--text-3);
   padding: 2px 2px 0;
 }
+.msg-login {
+  align-items: center;
+  justify-content: center;
+  min-height: 168px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13.5px;
+}
+.msg-login a { color: var(--brand); }
 .msg-list { display: flex; flex-direction: column; }
 .msg-item { display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--border); }
 .msg-item:first-child { padding-top: 0; }
