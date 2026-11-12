@@ -71,6 +71,8 @@ npm run build
 
 前端就是一堆静态文件，传到 `/var/www/blog/dist`，Nginx 指过去，`/api/` 转给后端。
 
+线上前面还挂了腾讯 EdgeOne，源站 Nginx 也开了 HTTPS，所以是 EdgeOne 证书和源站证书两套。前端这边不用管，证书续期和 EdgeOne 同步看后端 README 里的「EdgeOne 和证书续期」。
+
 ### 1. 上传
 
 把本地 `dist` 里面的内容传到：
